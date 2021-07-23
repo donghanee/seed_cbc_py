@@ -30,7 +30,6 @@ class SeedCBC:
         s = base64.b64decode(s)
         decryptor = self.cipher.decryptor()
         enc = decryptor.update(s) + decryptor.finalize()
-        print(enc)
         return self.unpad(enc.decode())
 
     def pad(self, s):
