@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import SEED
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 from cryptography.hazmat.backends.openssl.backend import backend
+from cryptography.hazmat.primitives import padding
 import base64
 
 
@@ -30,20 +31,10 @@ class SeedCBC:
         s = base64.b64decode(s)
         decryptor = self.cipher.decryptor()
         enc = decryptor.update(s) + decryptor.finalize()
-        return self.unpad(enc.decode())
+        unpad = padding.PKCS7(128).unpadder()
+        result = unpad.update(enc) + unpad.finalize()
+        return result.decode()
 
     def pad(self, s):
         BLOCK_SIZE = 16
         return s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * chr(BLOCK_SIZE - len(s) % BLOCK_SIZE)
-
-    def unpad(self, s):
-        i = s.find('\x00')
-        if i != -1:
-            return s[:i]
-        i = s.find('\x06')
-        if i != -1:
-            return s[:i]
-        i = s.find('\x10')
-        if i != -1:
-            return s[:i]
-        return s
